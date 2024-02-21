@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Stock Screener - Results</title>
+
+        <!-- Include Tailwind CSS -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+
+        <!-- Include custom styles -->
+        <link rel="stylesheet" href="styles.css">
+    </head>
+    <body class="bg-gray-100">
+        <div class="container mx-auto px-4 py-8">
+            <div class="bg-white p-8 rounded-lg shadow-lg">
+
+                <!-- Title -->
+                <h1 class="text-3xl font-bold mb-4 text-blue-600 text-shadow">Stock Screener Results</h1>
+                
+                <!-- Display stock data -->
+                <ul class="list-disc pl-6">
+                    <li><strong>Symbol:</strong> {{ stock_data.get('symbol', 'N/A') }}</li>
+                    <li><strong>Name:</strong> {{ stock_data.get('longName', 'N/A') }}</li>
+                    <li><strong>Price:</strong> {{ stock_data.get('regularMarketPrice', 'N/A') }}</li>
+                    <li><strong>Volume:</strong> {{ stock_data.get('regularMarketVolume', 'N/A') }}</li>
+                    <li><strong>Market Cap:</strong> {{ stock_data.get('marketCap', 'N/A') }}</li>
+                </ul>
+                <!-- Canvas for displaying stock chart -->
+                <canvas id="stockChart" class="mt-8"></canvas>
+            </div>
+        </div>
+
+        <!-- Include Chart.js library -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+        <script>
+            // Retrieve historical data from Flask and convert it to JSON
+            var historicalData = {{ historical_data | tojson }};
+            
+            // Extract dates and closing prices from historical data
+            var dates = historicalData.map(function(item) {
+                return item.date;
+            });
+            var prices = historicalData.map(function(item) {
+                return item.close;
+            });
+            
+            // Create a Chart.js chart
+            var ctx = document.getElementById('stockChart').getContext('2d');
+            var myChart = new Chart(ctx, {
+                type: 'line', // Line chart type
+                data: {
+                    labels: dates, // Dates on x-axis
+                    datasets: [{
+                        label: 'Closing Price', // Label for the dataset
+                        data: prices, // Closing prices on y-axis
+                        backgroundColor: 'rgba(54, 162, 235, 0.2)', // Background color
+                        borderColor: 'rgba(54, 162, 235, 1)', // Border color
+                        borderWidth: 1 // Border width
+                    }]
+                },
+                options: {
+                    // Customize scales
+                    scales: {
+                        xAxes: [{
+                            type: 'time', // Use time scale for x-axis
+                            time: {
+                                unit: 'day' // Display unit as day
+                            }
+                        }],
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: false // Do not begin y-axis at zero
+                            }
+                        }]
+                    }
+                }
+            });
+        </script>
+    </body>
+</html>
